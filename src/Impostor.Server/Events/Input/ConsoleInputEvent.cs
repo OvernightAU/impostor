@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Text;
 using Impostor.Api.Events.Input;
 using Impostor.Api.Net.Manager;
 using Impostor.Server.Net.Manager;
@@ -46,8 +47,18 @@ namespace Impostor.Server.Input
                             return;
                         }
 
-                        var clientList = string.Join(", ", _clientManager.Clients.Select(client => $"{client.Name}, ID: {client.Id}, GAME: {client.Player?.Game.Code.Code ?? "Not in game"}"));
-                        Console.WriteLine(clientList);
+
+                        var clientList = new StringBuilder();
+                        clientList.AppendLine("NAME   | ID   | GAME");
+                        clientList.AppendLine("-----------------------");
+
+                        foreach (var client in _clientManager.Clients)
+                        {
+                            var gameCode = client.Player?.Game.Code.Code ?? "Not in game";
+                            clientList.AppendLine($"{client.Name,-7} | {client.Id,-4} | {gameCode}");
+                        }
+
+                        Console.WriteLine(clientList.ToString());
                         break;
                     }
 
