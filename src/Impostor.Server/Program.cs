@@ -9,6 +9,7 @@ using Impostor.Api.Net.Messages;
 using Impostor.Hazel.Extensions;
 using Impostor.Server.Config;
 using Impostor.Server.Events;
+using Impostor.Server.Input;
 using Impostor.Server.Net;
 using Impostor.Server.Net.Factories;
 using Impostor.Server.Net.Manager;
@@ -28,6 +29,7 @@ namespace Impostor.Server
 {
     internal static class Program
     {
+
         private static int Main(string[] args)
         {
 #if DEBUG
@@ -104,6 +106,10 @@ namespace Impostor.Server
                 })
                 .ConfigureServices((host, services) =>
                 {
+                    var consoleInput = host.Configuration
+                        .GetSection(ConsoleInputConfig.Section)
+                        .Get<ConsoleInputConfig>() ?? new ConsoleInputConfig();
+
                     var debug = host.Configuration
                         .GetSection(DebugConfig.Section)
                         .Get<DebugConfig>() ?? new DebugConfig();
@@ -116,6 +122,7 @@ namespace Impostor.Server
                     services.Configure<AntiCheatConfig>(host.Configuration.GetSection(AntiCheatConfig.Section));
                     services.Configure<ServerConfig>(host.Configuration.GetSection(ServerConfig.Section));
                     services.Configure<ServerRedirectorConfig>(host.Configuration.GetSection(ServerRedirectorConfig.Section));
+                    services.AddHostedService<ConsoleInputService>();
 
                     if (redirector.Enabled)
                     {
@@ -157,8 +164,10 @@ namespace Impostor.Server
                         services.AddSingleton<INodeLocator, NodeLocatorNoOp>();
                     }
 
+
                     services.AddSingleton<ClientManager>();
                     services.AddSingleton<IClientManager>(p => p.GetRequiredService<ClientManager>());
+
 
                     if (redirector.Enabled && redirector.Master)
                     {

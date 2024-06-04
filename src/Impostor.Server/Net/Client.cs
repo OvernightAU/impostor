@@ -146,6 +146,22 @@ namespace Impostor.Server.Net
                     break;
                 }
 
+                case MessageFlags.KickWithReason:
+                {
+                    if (!IsPacketAllowed(reader, true))
+                    {
+                        return;
+                    }
+
+                    Message15KickReasonC2S.Deserialize(
+                        reader,
+                        out var playerId,
+                        out var reason);
+
+                    await _clientManager.GetClientById(playerId).DisconnectAsync(DisconnectReason.Custom, reason);
+                    break;
+                }
+
                 case MessageFlags.GameData:
                 case MessageFlags.GameDataTo:
                 {

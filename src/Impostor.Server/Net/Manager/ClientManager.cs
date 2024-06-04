@@ -23,6 +23,12 @@ namespace Impostor.Server.Net.Manager
             GameVersion.GetVersion(2024, 04, 09), // 2024.4.9
             GameVersion.GetVersion(2024, 04, 14), // 2024.4.14
             GameVersion.GetVersion(2024, 04, 28), // 2024.4.28
+            GameVersion.GetVersion(2024, 05, 26), // 2024.5.26
+            GameVersion.GetVersion(2024, 05, 28), // 2024.5.28
+            GameVersion.GetVersion(2024, 05, 29), // 2024.5.29
+            GameVersion.GetVersion(2024, 05, 30), // 2024.5.30
+            GameVersion.GetVersion(2024, 05, 31), // 2024.5.31
+            GameVersion.GetVersion(2024, 06, 4),  // 2024.6.4
         };
 
         private readonly ILogger<ClientManager> _logger;
@@ -53,6 +59,11 @@ namespace Impostor.Server.Net.Manager
             }
 
             return clientId;
+        }
+
+        public IClient? GetClientById(int clientId)
+        {
+            return Clients.FirstOrDefault(c => c.Id == clientId);
         }
 
         public async ValueTask RegisterConnectionAsync(IHazelConnection connection, string name, int clientVersion)

@@ -205,17 +205,17 @@ namespace Impostor.Server.Net.Inner.Objects
                         }
 
                         var rpcId = reader.ReadInt32();
-                        var victim = reader.ReadNetObject<InnerPlayerControl>(_game);
+                        //var victim = reader.ReadNetObject<InnerPlayerControl>(_game);
                         var filteredRoleName = Regex.Replace(PlayerInfo.RoleName, "Role", string.Empty);
 
-                        if (victim == null)
-                        {
+                        //if (victim == null)
+                        //{
                             _logger.LogInformation($"{PlayerInfo.PlayerName} Sent {filteredRoleName}RPC ({rpcId})");
-                        }
-                        else
-                        {
-                            _logger.LogInformation($"{PlayerInfo.PlayerName} Sent {filteredRoleName}RPC ({rpcId}) for target {victim.PlayerInfo.PlayerName}");
-                        }
+                        //}
+                        //else
+                        //{
+                            //_logger.LogInformation($"{PlayerInfo.PlayerName} Sent {filteredRoleName}RPC ({rpcId}) for target {victim.PlayerInfo.PlayerName}");
+                        //}
 
                         break;
                 }

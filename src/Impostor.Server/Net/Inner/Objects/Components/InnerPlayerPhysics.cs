@@ -17,11 +17,11 @@ namespace Impostor.Server.Net.Inner.Objects.Components
         private readonly InnerPlayerControl _playerControl;
         private readonly IEventManager _eventManager;
         private readonly Game _game;
+
         private enum RpcCalls
         {
             EnterVent = 0,
             ExitVent = 1,
-            ControlPlayer = 1
         }
 
         public InnerPlayerPhysics(ILogger<InnerPlayerPhysics> logger, InnerPlayerControl playerControl, IEventManager eventManager, Game game)
