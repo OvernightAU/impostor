@@ -2,6 +2,6 @@ namespace Impostor.Api.Games
 {
     public interface IGameCodeFactory
     {
-        GameCode Create();
+        GameCode Create(int num);
     }
 }

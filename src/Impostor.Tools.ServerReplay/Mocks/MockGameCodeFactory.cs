@@ -6,7 +6,7 @@ namespace Impostor.Tools.ServerReplay.Mocks
     {
         public GameCode Result { get; set; }
 
-        public GameCode Create()
+        public GameCode Create(int num)
         {
             return Result;
         }

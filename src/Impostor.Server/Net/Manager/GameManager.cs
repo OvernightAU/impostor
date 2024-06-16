@@ -47,11 +47,11 @@ namespace Impostor.Server.Net.Manager
         public async ValueTask<IGame> CreateAsync(GameOptionsData options, int digitCount)
         {
             // TODO: Prevent duplicates when using server redirector using INodeProvider.
-            var (success, game) = await TryCreateAsync(options);
+            var (success, game) = await TryCreateAsync(options, digitCount);
 
             for (int i = 0; i < 10 && !success; i++)
             {
-                (success, game) = await TryCreateAsync(options);
+                (success, game) = await TryCreateAsync(options, digitCount);
             }
 
             if (!success)
@@ -62,9 +62,9 @@ namespace Impostor.Server.Net.Manager
             return game;
         }
 
-        private async ValueTask<(bool success, Game game)> TryCreateAsync(GameOptionsData options)
+        private async ValueTask<(bool success, Game game)> TryCreateAsync(GameOptionsData options, int digit)
         {
-            var gameCode = _gameCodeFactory.Create();
+            var gameCode = _gameCodeFactory.Create(digit);
             var gameCodeStr = gameCode.Code;
             var game = ActivatorUtilities.CreateInstance<Game>(_serviceProvider, _publicIp, gameCode, options);
 
