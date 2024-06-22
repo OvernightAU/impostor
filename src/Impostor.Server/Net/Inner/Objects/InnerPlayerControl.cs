@@ -55,6 +55,7 @@ namespace Impostor.Server.Net.Inner.Objects
             RoleRpc = 25,
             SyncRoleSettings = 26,
             ServerMods = 27,
+            SyncRoleOption = 28,
         }
 
         public InnerPlayerControl(ILogger<InnerPlayerControl> logger, IServiceProvider serviceProvider, IEventManager eventManager, Game game)
@@ -227,6 +228,16 @@ namespace Impostor.Server.Net.Inner.Objects
                         PlayerInfo.EnabledMods = JsonConvert.DeserializeObject<HashSet<string>>(modsJson) ?? new HashSet<string> { "nomods" };
 
                         // This rpc used to be handled by server, but its better to be handled by host
+                        break;
+                }
+
+                case RpcCalls.SyncRoleOption:
+                {
+                        if (!sender.IsHost)
+                        {
+                            throw new ImpostorCheatException($"Client sent {nameof(RpcCalls.SyncRoleSettings)} but was not a host");
+                        }
+
                         break;
                 }
 
