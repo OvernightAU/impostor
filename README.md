@@ -6,7 +6,7 @@ If you want to host for official Among Us, go to [Impostor Repo](https://github.
 
 | Impostor version | Modding Us version | Experimental | 
 |-|-|-|
-| 1.2.2 (Modded) | 2024.04.28 - 2019.8.16 | Yes |
+| 1.2.3 (Modded) | 2024.04.28 - 2019.8.16 | Yes |
 
 ## Features
 
