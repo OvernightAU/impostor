@@ -183,7 +183,12 @@ namespace Impostor.Server.Net.Inner.Objects
                             throw new ImpostorCheatException($"Client sent {nameof(RpcCalls.StartGame)} but was not a host");
                         }
 
-                        _logger.LogInformation($"Started game for {PlayerInfo.PlayerName}");
+                        _logger.LogInformation($"Role cutscene started for {_game.Code.Code}");
+
+                        if (_game.GameState == GameStates.Starting)
+                        {
+                            await _game.StartedAsync();
+                        }
 
                         break;
                 }
@@ -206,17 +211,9 @@ namespace Impostor.Server.Net.Inner.Objects
                         }
 
                         var rpcId = reader.ReadInt32();
-                        //var victim = reader.ReadNetObject<InnerPlayerControl>(_game);
                         var filteredRoleName = Regex.Replace(PlayerInfo.RoleName, "Role", string.Empty);
 
-                        //if (victim == null)
-                        //{
-                            _logger.LogInformation($"{PlayerInfo.PlayerName} Sent {filteredRoleName}RPC ({rpcId})");
-                        //}
-                        //else
-                        //{
-                            //_logger.LogInformation($"{PlayerInfo.PlayerName} Sent {filteredRoleName}RPC ({rpcId}) for target {victim.PlayerInfo.PlayerName}");
-                        //}
+                        _logger.LogInformation($"{PlayerInfo.PlayerName} Sent {filteredRoleName}RPC ({rpcId})");
 
                         break;
                 }
@@ -366,7 +363,7 @@ namespace Impostor.Server.Net.Inner.Objects
                 // TODO: (ANTICHEAT) Cooldown check?
                 case RpcCalls.MurderPlayer:
                 {
-                    if (!sender.IsHost && ClientManager.SupportedVersions.Contains(_game.Host.Client.GameVersion))
+                    if (!sender.IsHost && _game.Host.Client.VersionSupported)
                     {
                         throw new ImpostorCheatException($"Client sent {(RpcCalls)call} but is not host");
                     }
@@ -380,6 +377,7 @@ namespace Impostor.Server.Net.Inner.Objects
                     if (!player.PlayerInfo.IsDead)
                     {
                         player.Die(DeathReason.Kill);
+                        _logger.LogInformation("{0} was murdered by {1}", player.PlayerInfo.PlayerName, sender.Client.Name);
                         await _eventManager.CallAsync(new PlayerMurderEvent(_game, sender, this, player));
                     }
 
@@ -425,6 +423,8 @@ namespace Impostor.Server.Net.Inner.Objects
                     }
 
                     var chat = reader.ReadString();
+
+                    _logger.LogInformation("{0} Sent: {1}", sender.Client.Name, chat);
 
                     await _eventManager.CallAsync(new PlayerChatEvent(_game, sender, this, chat));
                     break;

@@ -95,7 +95,7 @@ namespace Impostor.Server.Net.Manager
             foreach (var (_, game) in _games.Where(x =>
                 x.Value.IsPublic &&
                 x.Value.GameState == GameStates.NotStarted &&
-                /*x.Value.Host.Client.GameVersion == version &&*/
+                x.Value.Host.Client.GameVersion == version &&
                 x.Value.PlayerCount < x.Value.Options.MaxPlayers))
             {
                 // Add to result.

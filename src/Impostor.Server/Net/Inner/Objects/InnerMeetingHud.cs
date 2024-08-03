@@ -93,6 +93,7 @@ namespace Impostor.Server.Net.Inner.Objects
                         var player = _game.GameNet.GameData.GetPlayerById(playerId);
                         if (player != null)
                         {
+                            _logger.LogInformation("{0} got voted out in {1}", player.PlayerName, _game.Code.Code);
                             player.Controller.Die(DeathReason.Exile);
                             await _eventManager.CallAsync(new PlayerExileEvent(_game, sender, player.Controller));
                         }

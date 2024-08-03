@@ -46,7 +46,7 @@ namespace Impostor.Server.Net
 
                     // Create game.
                     IGame game;
-                    if (!ClientManager.SupportedVersions.Contains(GameVersion))
+                    if (!ClientManager.IsVersionSupported(GameVersion))
                     {
                         _logger.LogInformation("Game with unsupported version ({0}) was created by ({1})", Api.Innersloth.GameVersion.Version2String(GameVersion), Id);
                         game = await _gameManager.CreateAsync(gameInfo, 4);

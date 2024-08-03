@@ -81,7 +81,18 @@ namespace Impostor.Server.Net.State
                 case InnerPlayerControl control:
                     {
                         // Hook up InnerPlayerControl <-> IClientPlayer.
-                        if (!TryGetPlayer(control.OwnerId, out var player))
+                        ClientPlayer? player;
+
+                        if (control.OwnerId == -2)
+                        {
+                            player = Host;
+                        }
+                        else
+                        {
+                            TryGetPlayer(control.OwnerId, out player);
+                        }
+
+                        if (player == null)
                         {
                             throw new ImpostorException("Failed to find player that spawned the InnerPlayerControl");
                         }

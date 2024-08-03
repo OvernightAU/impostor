@@ -1,4 +1,6 @@
 using System;
+using System.Globalization;
+using System.Linq;
 
 namespace Impostor.Api.Innersloth
 {
@@ -30,6 +32,28 @@ namespace Impostor.Api.Innersloth
                 versionString += $".{num4}";
             }
             return versionString;
+        }
+
+        public static DateTime ParseVersion(string dateString)
+        {
+            var parts = dateString.Split('.');
+
+            if (parts.Length < 3)
+            {
+                throw new FormatException("Invalid date format. Expected formats: yyyy.M.d or yyyy.MM.dd");
+            }
+
+            var validDateString = string.Join(".", parts.Take(3));
+            string[] formats = { "yyyy.M.d", "yyyy.MM.dd" };
+
+            if (DateTime.TryParseExact(validDateString, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate))
+            {
+                return parsedDate;
+            }
+            else
+            {
+                throw new FormatException("Invalid date format. Expected formats: yyyy.M.d or yyyy.MM.dd");
+            }
         }
     }
 }

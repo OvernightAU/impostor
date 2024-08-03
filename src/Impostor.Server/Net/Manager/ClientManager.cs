@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,21 +17,14 @@ namespace Impostor.Server.Net.Manager
 {
     internal partial class ClientManager
     {
-        public static HashSet<int> SupportedVersions { get; } = new HashSet<int>
+        private static readonly DateTime LastDateTime = new(2024, 4, 2);
+
+        public static bool IsVersionSupported(int version)
         {
-            GameVersion.GetVersion(2024, 04, 02), // 2024.4.2
-            GameVersion.GetVersion(2024, 04, 06), // 2024.4.6
-            GameVersion.GetVersion(2024, 04, 09), // 2024.4.9
-            GameVersion.GetVersion(2024, 04, 14), // 2024.4.14
-            GameVersion.GetVersion(2024, 04, 28), // 2024.4.28
-            GameVersion.GetVersion(2024, 05, 26), // 2024.5.26
-            GameVersion.GetVersion(2024, 05, 28), // 2024.5.28
-            GameVersion.GetVersion(2024, 05, 29), // 2024.5.29
-            GameVersion.GetVersion(2024, 05, 30), // 2024.5.30
-            GameVersion.GetVersion(2024, 05, 31), // 2024.5.31
-            GameVersion.GetVersion(2024, 06, 4),  // 2024.6.4
-            GameVersion.GetVersion(2024, 06, 22), // 2024.6.22
-        };
+            var time = GameVersion.ParseVersion(GameVersion.Version2String(version));
+
+            return time >= LastDateTime;
+        }
 
         private readonly ILogger<ClientManager> _logger;
         private readonly ConcurrentDictionary<int, ClientBase> _clients;
@@ -90,6 +84,7 @@ namespace Impostor.Server.Net.Manager
 
             client.Id = id;
             client.GameVersion = clientVersion;
+            client.VersionSupported = IsVersionSupported(clientVersion);
             _logger.LogTrace("Client connected.");
             _clients.TryAdd(id, client);
         }

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Reflection.PortableExecutable;
 using Impostor.Api.Net.Messages;
 
 namespace Impostor.Api.Innersloth
@@ -42,6 +43,16 @@ namespace Impostor.Api.Innersloth
             get => (MapTypes)MapId;
             set => MapId = (byte)value;
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether gets or sets the role confirmation for the ejected player.
+        /// </summary>
+        public bool ConfirmEjections { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether gets or sets the visual votes.
+        /// </summary>
+        public bool VisualVotes { get; set; }
 
         /// <summary>
         /// Gets or sets the Player speed modifier.
@@ -92,6 +103,11 @@ namespace Impostor.Api.Innersloth
         /// Gets or sets the number of impostors for this lobby.
         /// </summary>
         public int? NumImpostors { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of neutrals for this lobby.
+        /// </summary>
+        public int? NumNeutrals { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether ghosts (dead crew members) can do tasks.
@@ -213,6 +229,25 @@ namespace Impostor.Api.Innersloth
             var bytes = memory.Span;
 
             Version = bytes.ReadByte();
+
+            switch (this.Version)
+            {
+                case 1:
+                    DeserializeV1(bytes);
+                    break;
+                case 4:
+                    DeserializeV4(bytes);
+                    break;
+                case 5:
+                    DeserializeV4(bytes);
+                    break;
+                default:
+                    throw new ImpostorException($"Unknown GameOptionsData version {Version}.");
+            }
+        }
+
+        public void DeserializeV1(ReadOnlySpan<byte> bytes)
+        {
             MaxPlayers = bytes.ReadByte();
             Keywords = (GameKeywords)bytes.ReadUInt32();
             MapId = bytes.ReadByte();
@@ -234,28 +269,36 @@ namespace Impostor.Api.Innersloth
             VotingTime = bytes.ReadInt32();
 
             IsDefaults = bytes.ReadBoolean();
+            EmergencyCooldown = bytes.ReadByte();
+        }
 
-            if (Version > 1)
-            {
-                EmergencyCooldown = bytes.ReadByte();
-            }
+        public void DeserializeV4(ReadOnlySpan<byte> bytes)
+        {
+            MaxPlayers = bytes.ReadByte();
+            Keywords = 0;
+            MapId = bytes.ReadByte();
+            ConfirmEjections = bytes.ReadBoolean();
+            VisualVotes = bytes.ReadBoolean();
+            PlayerSpeedMod = bytes.ReadSingle();
 
-            if (Version > 2)
-            {
-                ConfirmImpostor = bytes.ReadBoolean();
-                VisualTasks = bytes.ReadBoolean();
-            }
+            CrewLightMod = bytes.ReadSingle();
+            ImpostorLightMod = bytes.ReadSingle();
+            KillCooldown = bytes.ReadSingle();
 
-            if (Version > 3)
-            {
-                AnonymousVotes = bytes.ReadBoolean();
-                TaskBarUpdate = (TaskBarUpdate)bytes.ReadByte();
-            }
+            NumCommonTasks = bytes.ReadByte();
+            NumLongTasks = bytes.ReadByte();
+            NumShortTasks = bytes.ReadByte();
 
-            if (Version > 4)
-            {
-                throw new ImpostorException($"Unknown GameOptionsData version {Version}.");
-            }
+            NumEmergencyMeetings = bytes.ReadInt32();
+
+            NumImpostors = bytes.ReadByte();
+            NumNeutrals = bytes.ReadByte();
+            KillDistance = (KillDistances)bytes.ReadByte();
+            DiscussionTime = bytes.ReadInt32();
+            VotingTime = bytes.ReadInt32();
+
+            IsDefaults = false;
+            EmergencyCooldown = bytes.ReadByte();
         }
     }
 }
