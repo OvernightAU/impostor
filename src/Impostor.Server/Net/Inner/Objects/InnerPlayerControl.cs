@@ -164,7 +164,7 @@ namespace Impostor.Server.Net.Inner.Objects
                             throw new ImpostorCheatException($"Client sent {nameof(RpcCalls.SetRole)} but was not a host");
                         }
 
-                        string roleName = reader.ReadString();
+                        var roleName = reader.ReadString();
                         _logger.LogInformation($"{PlayerInfo.PlayerName} role was set to {roleName}");
                         PlayerInfo.RoleName = roleName;
 
@@ -198,6 +198,16 @@ namespace Impostor.Server.Net.Inner.Objects
                         if (!sender.IsHost)
                         {
                             throw new ImpostorCheatException($"Client sent {nameof(RpcCalls.SyncRoleSettings)} but was not a host");
+                        }
+
+                        break;
+                }
+
+                case RpcCalls.SetPlayerScale:
+                {
+                        if (!sender.IsHost)
+                        {
+                            throw new ImpostorCheatException($"Client sent {nameof(RpcCalls.SetPlayerScale)} but was not a host");
                         }
 
                         break;
