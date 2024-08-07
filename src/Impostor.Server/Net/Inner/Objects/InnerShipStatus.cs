@@ -18,12 +18,11 @@ namespace Impostor.Server.Net.Inner.Objects
         private readonly ILogger<InnerShipStatus> _logger;
         private readonly Game _game;
         private readonly Dictionary<SystemTypes, ISystemType> _systems;
-        private enum RpcCalls
+        public enum RpcCalls
         {
             CloseDoorsOfType = 0,
             RepairSystem = 1,
-            MoveEnemy = 2,
-            EndGameCustom = 3
+            EndGameCustom = 2,
         }
 
         public InnerShipStatus(ILogger<InnerShipStatus> logger, Game game)
@@ -90,9 +89,6 @@ namespace Impostor.Server.Net.Inner.Objects
                     break;
                 }
 
-                case RpcCalls.MoveEnemy:
-                break;
-
                 case RpcCalls.EndGameCustom:
                 {
                     if (!sender.IsHost)
@@ -111,7 +107,7 @@ namespace Impostor.Server.Net.Inner.Objects
 
                 default:
                 {
-                    _logger.LogWarning("{0}: Unknown rpc call {1}", nameof(InnerShipStatus), call);
+                    //_logger.LogWarning("{0}: Unknown rpc call {1}", nameof(InnerShipStatus), call);
                     break;
                 }
             }
