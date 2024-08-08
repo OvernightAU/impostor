@@ -329,7 +329,7 @@ namespace Impostor.Server.Net.Inner.Objects
                         throw new ImpostorCheatException($"Client sent {nameof(RpcCalls.SetHat)} to a specific player instead of broadcast");
                     }
 
-                    PlayerInfo.HatId = reader.ReadPackedUInt32();
+                    PlayerInfo.HatId = reader.ReadString();
                     break;
                 }
 
@@ -345,7 +345,7 @@ namespace Impostor.Server.Net.Inner.Objects
                         throw new ImpostorCheatException($"Client sent {(RpcCalls)call} to a specific player instead of broadcast");
                     }
 
-                    PlayerInfo.SkinId = reader.ReadPackedUInt32();
+                    PlayerInfo.SkinId = reader.ReadString();
                     break;
                 }
 
@@ -508,7 +508,7 @@ namespace Impostor.Server.Net.Inner.Objects
                         throw new ImpostorCheatException($"Client sent {nameof(RpcCalls.SetPet)} to a specific player instead of broadcast");
                     }
 
-                    PlayerInfo.PetId = reader.ReadPackedUInt32();
+                    PlayerInfo.PetId = reader.ReadString();
                     break;
                 }
 

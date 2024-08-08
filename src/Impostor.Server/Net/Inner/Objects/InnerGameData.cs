@@ -126,7 +126,6 @@ namespace Impostor.Server.Net.Inner.Objects
 
         public override void Deserialize(IClientPlayer sender, IClientPlayer? target, IMessageReader reader, bool initialState)
         {
-            /*
             if (!sender.IsHost)
             {
                 throw new ImpostorCheatException($"Client attempted to send data for {nameof(InnerGameData)} as non-host");
@@ -147,7 +146,6 @@ namespace Impostor.Server.Net.Inner.Objects
                 }
                 catch (Exception ex) { _logger.LogInformation(ex.ToString()); }
             }
-            */
         }
 
         internal void AddPlayer(InnerPlayerControl control)

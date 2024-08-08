@@ -40,46 +40,31 @@ namespace Impostor.Server.Net.Inner.Objects
             return SetColorAsync((byte)colorType);
         }
 
-        public async ValueTask SetHatAsync(uint hatId)
+        public async ValueTask SetHatAsync(string hatId)
         {
             PlayerInfo.HatId = hatId;
 
             using var writer = _game.StartRpc(NetId, (byte)RpcCalls.SetHat);
-            writer.WritePacked(hatId);
+            writer.Write(hatId);
             await _game.FinishRpcAsync(writer);
         }
 
-        public ValueTask SetHatAsync(HatType hatType)
-        {
-            return SetHatAsync((uint)hatType);
-        }
-
-        public async ValueTask SetPetAsync(uint petId)
+        public async ValueTask SetPetAsync(string petId)
         {
             PlayerInfo.PetId = petId;
 
             using var writer = _game.StartRpc(NetId, (byte)RpcCalls.SetPet);
-            writer.WritePacked(petId);
+            writer.Write(petId);
             await _game.FinishRpcAsync(writer);
         }
 
-        public ValueTask SetPetAsync(PetType petType)
-        {
-            return SetPetAsync((uint)petType);
-        }
-
-        public async ValueTask SetSkinAsync(uint skinId)
+        public async ValueTask SetSkinAsync(string skinId)
         {
             PlayerInfo.SkinId = skinId;
 
             using var writer = _game.StartRpc(NetId, (byte)RpcCalls.SetSkin);
-            writer.WritePacked(skinId);
+            writer.Write(skinId);
             await _game.FinishRpcAsync(writer);
-        }
-
-        public ValueTask SetSkinAsync(SkinType skinType)
-        {
-            return SetSkinAsync((uint)skinType);
         }
 
         public async ValueTask SendChatAsync(string text)

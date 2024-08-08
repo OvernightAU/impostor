@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Numerics;
 using System.Threading.Tasks;
 using Impostor.Api.Events;
@@ -72,14 +72,6 @@ namespace Impostor.Plugins.Example.Handlers
                 e.Game.Options.PlayerSpeedMod = 5;
 
                 await e.Game.SyncSettingsAsync();
-            }
-
-            if (e.Message == "look")
-            {
-                await e.PlayerControl.SetColorAsync(ColorType.Pink);
-                await e.PlayerControl.SetHatAsync(HatType.Cheese);
-                await e.PlayerControl.SetSkinAsync(SkinType.Police);
-                await e.PlayerControl.SetPetAsync(PetType.Ufo);
             }
 
             if (e.Message == "snap")

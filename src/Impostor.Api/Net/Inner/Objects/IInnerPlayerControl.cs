@@ -55,11 +55,7 @@ namespace Impostor.Api.Net.Inner.Objects
         /// </summary>
         /// <param name="hatId">An hat for the player.</param>
         /// <returns>Task that must be awaited.</returns>
-        ValueTask SetHatAsync(uint hatId);
-
-        /// <param name="hatType">An hat for the player.</param>
-        /// <inheritdoc cref="SetHatAsync(uint)" />
-        ValueTask SetHatAsync(HatType hatType);
+        ValueTask SetHatAsync(string hatId);
 
         /// <summary>
         ///     Sets the pet of the current <see cref="IInnerPlayerControl"/>.
@@ -67,11 +63,7 @@ namespace Impostor.Api.Net.Inner.Objects
         /// </summary>
         /// <param name="petId">A pet for the player.</param>
         /// <returns>Task that must be awaited.</returns>
-        ValueTask SetPetAsync(uint petId);
-
-        /// <param name="petType">A pet for the player.</param>
-        /// <inheritdoc cref="SetPetAsync(uint)" />
-        ValueTask SetPetAsync(PetType petType);
+        ValueTask SetPetAsync(string petId);
 
         /// <summary>
         ///     Sets the skin of the current <see cref="IInnerPlayerControl"/>.
@@ -79,11 +71,7 @@ namespace Impostor.Api.Net.Inner.Objects
         /// </summary>
         /// <param name="skinId">A skin for the player.</param>
         /// <returns>Task that must be awaited.</returns>
-        ValueTask SetSkinAsync(uint skinId);
-
-        /// <param name="skinType">A skin for the player.</param>
-        /// <inheritdoc cref="SetSkinAsync(uint)" />
-        ValueTask SetSkinAsync(SkinType skinType);
+        ValueTask SetSkinAsync(string skinId);
 
         /// <summary>
         ///     Send a chat message as the current <see cref="IInnerPlayerControl"/>.

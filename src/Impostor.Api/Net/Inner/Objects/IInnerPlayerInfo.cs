@@ -19,17 +19,17 @@ namespace Impostor.Api.Net.Inner.Objects
         /// <summary>
         ///     Gets the hat of the player.
         /// </summary>
-        uint HatId { get; }
+        string HatId { get; }
 
         /// <summary>
         ///     Gets the pet of the player.
         /// </summary>
-        uint PetId { get; }
+        string PetId { get; }
 
         /// <summary>
         ///     Gets the skin of the player.
         /// </summary>
-        uint SkinId { get; }
+        string SkinId { get; }
 
         /// <summary>
         ///     Gets a value indicating whether the player is an impostor.

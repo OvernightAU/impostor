@@ -21,11 +21,11 @@ namespace Impostor.Server.Net.Inner.Objects
 
         public byte ColorId { get; internal set; }
 
-        public uint HatId { get; internal set; }
+        public string HatId { get; internal set; }
 
-        public uint PetId { get; internal set; }
+        public string PetId { get; internal set; }
 
-        public uint SkinId { get; internal set; }
+        public string SkinId { get; internal set; }
 
         public bool Disconnected { get; internal set; }
 
@@ -41,11 +41,6 @@ namespace Impostor.Server.Net.Inner.Objects
 
         public DateTimeOffset LastMurder { get; set; }
 
-        public bool CanMurder(IGame game)
-        {
-            return DateTimeOffset.UtcNow.Subtract(LastMurder).TotalSeconds >= game.Options.KillCooldown;
-        }
-
         public void Serialize(IMessageWriter writer)
         {
             throw new NotImplementedException();
@@ -55,9 +50,9 @@ namespace Impostor.Server.Net.Inner.Objects
         {
             PlayerName = reader.ReadString();
             ColorId = reader.ReadByte();
-            HatId = reader.ReadPackedUInt32();
-            PetId = reader.ReadPackedUInt32();
-            SkinId = reader.ReadPackedUInt32();
+            HatId = reader.ReadString();
+            PetId = reader.ReadString();
+            SkinId = reader.ReadString();
             var flag = reader.ReadByte();
             Disconnected = (flag & 1) > 0;
             IsDead = (flag & 4) > 0;
