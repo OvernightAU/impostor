@@ -44,7 +44,7 @@ namespace Impostor.Server.Net.State
             typeof(InnerShipStatus), // AprilShipStatus
         };
 
-        private readonly List<InnerNetObject> _allObjects = new List<InnerNetObject>();
+        private readonly List<InnerNetObject> _allObjects = new();
         private readonly Dictionary<uint, InnerNetObject> _allObjectsFast = new Dictionary<uint, InnerNetObject>();
 
         private int _gamedataInitialized;

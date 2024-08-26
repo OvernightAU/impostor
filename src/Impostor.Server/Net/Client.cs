@@ -200,9 +200,23 @@ namespace Impostor.Server.Net
                     }
                     catch (ImpostorCheatException e)
                     {
-                        string reason = e.Message ?? "Unknown reason";
+                        var reason = e.Message ?? "Unknown reason";
+                        var supportCode = Random.Shared.Next(0, 999_999).ToString("000-000");
 
-                        await DisconnectAsync(DisconnectReason.Custom, $"Kicked by anticheat:\n{reason}");
+                        _logger.LogWarning("Client {Name} ({Id}) was caught cheating: [{SupportCode}] {Reason}", Name, Id, supportCode, reason);
+
+                        if (_antiCheatConfig.BanIpFromGame)
+                        {
+                            Player?.Game.BanIp(Connection.EndPoint.Address);
+                        }
+
+                        var disconnectMessage =
+                            $"""
+                            You have been caught cheating and were {(_antiCheatConfig.BanIpFromGame ? "banned" : "kicked")} from the lobby.
+                            For questions, contact your server admin and share the following code: {supportCode}.
+                            """;
+
+                        await DisconnectAsync(DisconnectReason.Custom, disconnectMessage);
                     }
 
                     break;
