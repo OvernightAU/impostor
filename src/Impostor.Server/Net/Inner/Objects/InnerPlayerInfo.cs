@@ -48,19 +48,25 @@ namespace Impostor.Server.Net.Inner.Objects
 
         public void Deserialize(IMessageReader reader)
         {
-            PlayerName = reader.ReadString();
-            ColorId = reader.ReadByte();
-            HatId = reader.ReadString();
-            PetId = reader.ReadString();
-            SkinId = reader.ReadString();
-            var flag = reader.ReadByte();
-            Disconnected = (flag & 1) > 0;
-            IsDead = (flag & 4) > 0;
-            var taskCount = reader.ReadByte();
-            for (var i = 0; i < taskCount; i++)
+            try
             {
-                Tasks[i] ??= new InnerGameData.TaskInfo();
-                Tasks[i].Deserialize(reader);
+                PlayerName = reader.ReadString();
+                ColorId = reader.ReadByte();
+                HatId = reader.ReadString();
+                PetId = reader.ReadString();
+                SkinId = reader.ReadString();
+                var flag = reader.ReadByte();
+                Disconnected = (flag & 1) != 0;
+                IsDead = (flag & 4) != 0;
+                var taskCount = reader.ReadByte();
+                for (var i = 0; i < taskCount; i++)
+                {
+                    Tasks[i] ??= new InnerGameData.TaskInfo();
+                    Tasks[i].Deserialize(reader);
+                }
+            }
+            catch
+            {
             }
         }
     }

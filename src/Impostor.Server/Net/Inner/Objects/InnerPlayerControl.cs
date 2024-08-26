@@ -512,6 +512,16 @@ namespace Impostor.Server.Net.Inner.Objects
                     break;
                 }
 
+                case (RpcCalls)81:
+                {
+                    if (!sender.IsHost)
+                    {
+                        throw new ImpostorCheatException($"Client tried to spawn a map without authorization.");
+                    }
+
+                    break;
+                }
+
                 // TODO: Understand this RPC
                 case RpcCalls.SetStartCounter:
                 {
