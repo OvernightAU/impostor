@@ -86,9 +86,9 @@ namespace Impostor.Server.Net.Inner.Objects
 
         public override async ValueTask HandleRpc(ClientPlayer sender, ClientPlayer? target, byte call, IMessageReader reader)
         {
-            if (!sender.IsOwnerOrHost(this))
+            if (!sender.IsOwner(this) && !sender.IsHost)
             {
-            throw new ImpostorCheatException($"Client sent {(RpcCalls)call} to unowned {PlayerInfo?.PlayerName} and is not host");
+                throw new ImpostorCheatException($"Client sent {(RpcCalls)call} to unowned {PlayerInfo?.PlayerName} and is not host");
             }
 
             switch ((RpcCalls)call)
@@ -96,11 +96,6 @@ namespace Impostor.Server.Net.Inner.Objects
                 // Play an animation.
                 case RpcCalls.PlayAnimation:
                 {
-                    if (!sender.IsOwner(this))
-                    {
-                    throw new ImpostorCheatException($"Client sent {(RpcCalls)call} to an unowned {nameof(InnerPlayerControl)}");
-                    }
-
                     if (target != null)
                     {
                         throw new ImpostorCheatException($"Client sent {(RpcCalls)call} to a specific player instead of broadcast");
@@ -113,11 +108,6 @@ namespace Impostor.Server.Net.Inner.Objects
                 // Complete a task.
                 case RpcCalls.CompleteTask:
                 {
-                    if (!sender.IsOwner(this))
-                    {
-                        throw new ImpostorCheatException($"Client sent {(RpcCalls)call} to an unowned {nameof(InnerPlayerControl)}");
-                    }
-
                     if (target != null)
                     {
                         throw new ImpostorCheatException($"Client sent {(RpcCalls)call} to a specific player instead of broadcast");
@@ -154,7 +144,7 @@ namespace Impostor.Server.Net.Inner.Objects
                 // Set Impostors. But Unused
                 case RpcCalls.SetInfected:
                 {
-                break;
+                    break;
                 }
 
                 case RpcCalls.SetRole:
@@ -167,11 +157,6 @@ namespace Impostor.Server.Net.Inner.Objects
                         var roleName = reader.ReadString();
                         _logger.LogInformation($"{PlayerInfo.PlayerName} role was set to {roleName}");
                         PlayerInfo.RoleName = roleName;
-
-                        if (_game.GameState == GameStates.Starting)
-                        {
-                            await _game.StartedAsync();
-                        }
 
                         break;
                 }
@@ -215,11 +200,6 @@ namespace Impostor.Server.Net.Inner.Objects
 
                 case RpcCalls.RoleRpc:
                 {
-                        if (!sender.IsOwnerOrHost(this))
-                        {
-                            throw new ImpostorCheatException($"Client sent {nameof(RpcCalls.RoleRpc)} but was not a host");
-                        }
-
                         var rpcId = reader.ReadInt32();
                         var filteredRoleName = Regex.Replace(PlayerInfo.RoleName, "Role", string.Empty);
 
@@ -232,7 +212,7 @@ namespace Impostor.Server.Net.Inner.Objects
                 {
                         var modsJson = reader.ReadString();
 
-                        PlayerInfo.EnabledMods = JsonConvert.DeserializeObject<HashSet<string>>(modsJson) ?? new HashSet<string> { "nomods" };
+                        PlayerInfo.EnabledMods = JsonConvert.DeserializeObject<List<string>>(modsJson) ?? new List<string> { "nomods" };
 
                         // This rpc used to be handled by server, but its better to be handled by host
                         break;
@@ -319,11 +299,6 @@ namespace Impostor.Server.Net.Inner.Objects
                 // Update the hat of a player.
                 case RpcCalls.SetHat:
                 {
-                    if (!sender.IsOwner(this))
-                    {
-                        throw new ImpostorCheatException($"Client sent {(RpcCalls)call} to an unowned {nameof(InnerPlayerControl)}");
-                    }
-
                     if (target != null)
                     {
                         throw new ImpostorCheatException($"Client sent {nameof(RpcCalls.SetHat)} to a specific player instead of broadcast");
@@ -335,11 +310,6 @@ namespace Impostor.Server.Net.Inner.Objects
 
                 case RpcCalls.SetSkin:
                 {
-                    if (!sender.IsOwner(this))
-                    {
-                        throw new ImpostorCheatException($"Client sent {(RpcCalls)call} to an unowned {nameof(InnerPlayerControl)}");
-                    }
-
                     if (target != null)
                     {
                         throw new ImpostorCheatException($"Client sent {(RpcCalls)call} to a specific player instead of broadcast");
@@ -353,11 +323,6 @@ namespace Impostor.Server.Net.Inner.Objects
                 // only called by a non-host player on to start meeting
                 case RpcCalls.ReportDeadBody:
                 {
-                    if (!sender.IsOwner(this))
-                    {
-                        throw new ImpostorCheatException($"Client sent {(RpcCalls)call} to an unowned {nameof(InnerPlayerControl)}");
-                    }
-
                     if (target != null)
                     {
                         throw new ImpostorCheatException($"Client sent {(RpcCalls)call} to a specific player instead of broadcast");
@@ -397,11 +362,6 @@ namespace Impostor.Server.Net.Inner.Objects
                 // TODO: (ANTICHEAT) If Reason is hacking, ban player?
                 case RpcCalls.CheckMurder:
                 {
-                    if (!sender.IsOwner(this))
-                    {
-                        throw new ImpostorCheatException($"Client sent {(RpcCalls)call} to an unowned {nameof(InnerPlayerControl)}");
-                    }
-
                     if (target != null)
                     {
                         throw new ImpostorCheatException($"Client sent {(RpcCalls)call} to a specific player instead of broadcast");
@@ -422,6 +382,7 @@ namespace Impostor.Server.Net.Inner.Objects
 
                 case RpcCalls.SendChat:
                 {
+                    // SendChat should still have ownership checks for obvious reasons
                     if (!sender.IsOwner(this))
                     {
                         throw new ImpostorCheatException($"Client sent {(RpcCalls)call} to an unowned {nameof(InnerPlayerControl)}");
@@ -464,14 +425,14 @@ namespace Impostor.Server.Net.Inner.Objects
 
                 case RpcCalls.SetScanner:
                 {
-                    if (!sender.IsOwner(this))
-                    {
-                        throw new ImpostorCheatException($"Client sent {nameof(RpcCalls.SetScanner)} to an unowned {nameof(InnerPlayerControl)}");
-                    }
-
                     if (target != null)
                     {
                         throw new ImpostorCheatException($"Client sent {nameof(RpcCalls.SetScanner)} to a specific player instead of broadcast");
+                    }
+
+                    if (_game.GameState != GameStates.Started)
+                    {
+                        throw new ImpostorCheatException($"Client sent {nameof(RpcCalls.SetScanner)} while game is not started");
                     }
 
                     var on = reader.ReadBoolean();
@@ -493,16 +454,22 @@ namespace Impostor.Server.Net.Inner.Objects
 
                     var playerId = reader.ReadByte();
                     var chatNote = (ChatNoteType)reader.ReadByte();
+
+                    if (playerId != PlayerId)
+                    {
+                        throw new ImpostorCheatException($"Client sent {nameof(RpcCalls.SendChatNote)} with a invalid player id");
+                    }
+
+                    if (!Enum.IsDefined(typeof(ChatNoteType), chatNote))
+                    {
+                        throw new ImpostorCheatException($"Client sent {nameof(RpcCalls.SendChatNote)} with a invalid chat note type");
+                    }
+
                     break;
                 }
 
                 case RpcCalls.SetPet:
                 {
-                    if (!sender.IsOwner(this))
-                    {
-                        throw new ImpostorCheatException($"Client sent {nameof(RpcCalls.SetPet)} to an unowned {nameof(InnerPlayerControl)}");
-                    }
-
                     if (target != null)
                     {
                         throw new ImpostorCheatException($"Client sent {nameof(RpcCalls.SetPet)} to a specific player instead of broadcast");
@@ -525,9 +492,9 @@ namespace Impostor.Server.Net.Inner.Objects
                 // TODO: Understand this RPC
                 case RpcCalls.SetStartCounter:
                 {
-                    if (!sender.IsOwner(this))
+                    if (!sender.IsHost)
                     {
-                        throw new ImpostorCheatException($"Client sent {nameof(RpcCalls.SetStartCounter)} to an unowned {nameof(InnerPlayerControl)}");
+                        throw new ImpostorCheatException($"Client sent {nameof(RpcCalls.SetStartCounter)} but is not host");
                     }
 
                     if (target != null)

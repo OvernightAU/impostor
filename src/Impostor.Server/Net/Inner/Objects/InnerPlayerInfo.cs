@@ -31,7 +31,7 @@ namespace Impostor.Server.Net.Inner.Objects
 
         public string RoleName { get; internal set; }
 
-        public HashSet<string> EnabledMods { get; internal set; }
+        public List<string> EnabledMods { get; internal set; }
 
         public bool IsDead { get; internal set; }
 

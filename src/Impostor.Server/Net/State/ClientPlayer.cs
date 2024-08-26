@@ -60,12 +60,6 @@ namespace Impostor.Server.Net.State
             return Client.Id == netObject.OwnerId;
         }
 
-        public bool IsOwnerOrHost(IInnerNetObject netObject)
-        {
-            if (IsHost) return true;
-            return Client.Id == netObject.OwnerId;
-        }
-
         /// <inheritdoc />
         public ValueTask KickAsync()
         {
