@@ -55,7 +55,7 @@ namespace Impostor.Server.Net.Inner.Objects.Components
                     return default;
                 }
 
-                if (!sender.IsOwnerOrHost(this))
+                if (!sender.IsOwner(this) && !sender.IsHost)
                 {
                     throw new ImpostorCheatException($"Client sent {nameof(RpcCalls.SnapTo)} to an unowned {nameof(InnerPlayerControl)}");
                 }

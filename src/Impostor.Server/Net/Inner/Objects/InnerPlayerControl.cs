@@ -489,7 +489,6 @@ namespace Impostor.Server.Net.Inner.Objects
                     break;
                 }
 
-                // TODO: Understand this RPC
                 case RpcCalls.SetStartCounter:
                 {
                     if (!sender.IsHost)
