@@ -491,10 +491,12 @@ namespace Impostor.Server.Net.Inner.Objects
 
                 case RpcCalls.SetStartCounter:
                 {
+                    /*
                     if (!sender.IsHost)
                     {
                         throw new ImpostorCheatException($"Client sent {nameof(RpcCalls.SetStartCounter)} but is not host");
                     }
+                    */
 
                     if (target != null)
                     {
