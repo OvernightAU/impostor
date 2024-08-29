@@ -455,10 +455,12 @@ namespace Impostor.Server.Net.Inner.Objects
                     var playerId = reader.ReadByte();
                     var chatNote = (ChatNoteType)reader.ReadByte();
 
+                    /* Another false positive... TODO: Figure out why this happens
                     if (playerId != PlayerId)
                     {
                         throw new ImpostorCheatException($"Client sent {nameof(RpcCalls.SendChatNote)} with a invalid player id");
                     }
+                    */
 
                     if (!Enum.IsDefined(typeof(ChatNoteType), chatNote))
                     {
