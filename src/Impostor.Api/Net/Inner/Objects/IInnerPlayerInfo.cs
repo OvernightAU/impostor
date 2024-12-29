@@ -14,7 +14,7 @@ namespace Impostor.Api.Net.Inner.Objects
         /// <summary>
         ///     Gets the color of the player.
         /// </summary>
-        byte ColorId { get; }
+        int ColorId { get; }
 
         /// <summary>
         ///     Gets the hat of the player.

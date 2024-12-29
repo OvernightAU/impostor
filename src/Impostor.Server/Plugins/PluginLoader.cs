@@ -110,11 +110,12 @@ namespace Impostor.Server.Plugins
 
             builder.ConfigureServices(services =>
             {
-                services.AddHostedService(provider => ActivatorUtilities.CreateInstance<PluginLoaderService>(provider, plugins));
+                services.AddSingleton(provider => ActivatorUtilities.CreateInstance<PluginLoaderService>(provider, plugins));
+                services.AddSingleton<IHostedService>(p => p.GetRequiredService<PluginLoaderService>());
 
                 foreach (var plugin in plugins.Where(plugin => plugin.Startup != null))
                 {
-                    plugin.Startup.ConfigureServices(services);
+                    plugin.Startup?.ConfigureServices(services);
                 }
             });
 

@@ -85,7 +85,12 @@ namespace Impostor.Server.Net.State
         {
             try
             {
-                if (Character == null)
+                if (Character == null ||
+                    string.IsNullOrEmpty(Character.PlayerInfo.PlayerName) ||
+                    Character.PlayerInfo.ColorId == -1 || Character.PlayerInfo.HatId == "missing" ||
+                    Character.PlayerInfo.SkinId == "missing" ||
+                    Character.PlayerInfo.PetId == "missing"
+                    )
                 {
                     _logger.LogInformation("{0} - Player {1} spawn timed out, kicking.", Game.Code, Client.Id);
 

@@ -77,10 +77,12 @@ namespace Impostor.Server.Net.Inner.Objects
                     }
 
                     var systemType = (SystemTypes)reader.ReadByte();
+                    /*
                     if (systemType == SystemTypes.Sabotage)
                     {
                         throw new ImpostorCheatException($"Client sent {nameof(RpcCalls.RepairSystem)} for {systemType} as crewmate");
                     }
+                    */
 
                     var player = reader.ReadNetObject<InnerPlayerControl>(_game);
                     var amount = reader.ReadByte();
@@ -93,7 +95,7 @@ namespace Impostor.Server.Net.Inner.Objects
                 {
                     if (!sender.IsHost)
                     {
-                    throw new ImpostorCheatException("Only host can end game");
+                        throw new ImpostorCheatException("Only host can end game");
                     }
 
                     var playerList = reader.ReadBytesAndSize();

@@ -175,49 +175,52 @@ namespace Impostor.Server.Net
                     // Handle packet.
                     using var readerCopy = reader.Copy();
 
-                    // TODO: Return value, either a bool (to cancel) or a writer (to cancel (null) or modify/overwrite).
-                    try
-                    {
-                        var verified = await Player.Game.HandleGameDataAsync(readerCopy, Player, toPlayer);
-                        if (verified)
+                        // TODO: Return value, either a bool (to cancel) or a writer (to cancel (null) or modify/overwrite).
+                        try
                         {
-                            // Broadcast packet to all other players.
-                            using (var writer = MessageWriter.Get(messageType))
+                            var verified = await Player.Game.HandleGameDataAsync(readerCopy, Player, toPlayer);
+                            if (verified)
                             {
-                                if (toPlayer)
+                                // Broadcast packet to all other players.
+                                using (var writer = MessageWriter.Get(messageType))
                                 {
-                                    var target = reader.ReadPackedInt32();
-                                    reader.CopyTo(writer);
-                                    await Player.Game.SendToAsync(writer, target);
-                                }
-                                else
-                                {
-                                    reader.CopyTo(writer);
-                                    await Player.Game.SendToAllExceptAsync(writer, Id);
+                                    if (toPlayer)
+                                    {
+                                        var target = reader.ReadPackedInt32();
+                                        reader.CopyTo(writer);
+                                        await Player.Game.SendToAsync(writer, target);
+                                    }
+                                    else
+                                    {
+                                        reader.CopyTo(writer);
+                                        await Player.Game.SendToAllExceptAsync(writer, Id);
+                                    }
                                 }
                             }
                         }
-                    }
-                    catch (ImpostorCheatException e)
-                    {
-                        var reason = e.Message ?? "Unknown reason";
-                        var supportCode = Random.Shared.Next(0, 999_999).ToString("000-000");
-
-                        _logger.LogWarning("Client {Name} ({Id}) was caught cheating: [{SupportCode}] {Reason}", Name, Id, supportCode, reason);
-
-                        if (_antiCheatConfig.BanIpFromGame)
+                        catch (ImpostorCheatException e)
                         {
-                            Player?.Game.BanIp(Connection.EndPoint.Address);
-                        }
+                            var reason = e.Message ?? "Unknown reason";
+                            var supportCode = Random.Shared.Next(0, 999_999).ToString("000-000");
 
-                        var disconnectMessage =
-                            $"""
+                            _logger.LogWarning("Client {Name} ({Id}) was caught cheating: [{SupportCode}] {Reason}", Name, Id, supportCode, reason);
+
+                            if (_antiCheatConfig.BanIpFromGame)
+                            {
+                                Player?.Game.BanIp(Connection.EndPoint.Address);
+                            }
+
+                            var disconnectMessage =
+                                $"""
                             You have been caught cheating and were {(_antiCheatConfig.BanIpFromGame ? "banned" : "kicked")} from the lobby.
                             For questions, contact your server admin and share the following code: {supportCode}.
                             """;
 
-                        await DisconnectAsync(DisconnectReason.Custom, disconnectMessage);
-                    }
+                            await DisconnectAsync(DisconnectReason.Custom, disconnectMessage);
+                        }
+                        catch (ImpostorCancelException)
+                        {
+                        }
 
                     break;
                 }

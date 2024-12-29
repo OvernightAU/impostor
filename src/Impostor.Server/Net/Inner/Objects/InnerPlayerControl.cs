@@ -14,6 +14,7 @@ using Impostor.Server.Net.Manager;
 using Impostor.Server.Net.State;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 using static Impostor.Server.Net.Inner.Objects.InnerPlayerControl;
 
@@ -292,7 +293,10 @@ namespace Impostor.Server.Net.Inner.Objects
                         throw new ImpostorCheatException($"Client sent {(RpcCalls)call} to a specific player instead of broadcast");
                     }
 
-                    PlayerInfo.ColorId = reader.ReadByte();
+                    var colorId = reader.ReadByte();
+
+                    PlayerInfo.ColorId = colorId;
+
                     break;
                 }
 
@@ -430,10 +434,12 @@ namespace Impostor.Server.Net.Inner.Objects
                         throw new ImpostorCheatException($"Client sent {nameof(RpcCalls.SetScanner)} to a specific player instead of broadcast");
                     }
 
+                    /*
                     if (_game.GameState != GameStates.Started)
                     {
                         throw new ImpostorCheatException($"Client sent {nameof(RpcCalls.SetScanner)} while game is not started");
                     }
+                    */
 
                     var on = reader.ReadBoolean();
                     var count = reader.ReadByte();
@@ -442,7 +448,7 @@ namespace Impostor.Server.Net.Inner.Objects
 
                 case RpcCalls.SendChatNote:
                 {
-                    if (!sender.IsOwner(this))
+                    if (!sender.IsHost || !sender.IsOwner(this))
                     {
                         throw new ImpostorCheatException($"Client sent {nameof(RpcCalls.SendChatNote)} to an unowned {nameof(InnerPlayerControl)}");
                     }
@@ -454,13 +460,6 @@ namespace Impostor.Server.Net.Inner.Objects
 
                     var playerId = reader.ReadByte();
                     var chatNote = (ChatNoteType)reader.ReadByte();
-
-                    /* Another false positive... TODO: Figure out why this happens
-                    if (playerId != PlayerId)
-                    {
-                        throw new ImpostorCheatException($"Client sent {nameof(RpcCalls.SendChatNote)} with a invalid player id");
-                    }
-                    */
 
                     if (!Enum.IsDefined(typeof(ChatNoteType), chatNote))
                     {

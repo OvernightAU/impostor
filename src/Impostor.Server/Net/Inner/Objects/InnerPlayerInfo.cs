@@ -19,7 +19,7 @@ namespace Impostor.Server.Net.Inner.Objects
 
         public string PlayerName { get; internal set; }
 
-        public byte ColorId { get; internal set; }
+        public int ColorId { get; internal set; }
 
         public string HatId { get; internal set; }
 
@@ -51,7 +51,7 @@ namespace Impostor.Server.Net.Inner.Objects
             try
             {
                 PlayerName = reader.ReadString();
-                ColorId = reader.ReadByte();
+                ColorId = reader.ReadInt32();
                 HatId = reader.ReadString();
                 PetId = reader.ReadString();
                 SkinId = reader.ReadString();

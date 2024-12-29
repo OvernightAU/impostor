@@ -24,12 +24,16 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.ObjectPool;
 using Serilog;
 using Serilog.Events;
+using Microsoft.AspNetCore.Hosting;
+using Impostor.Api.Plugins;
+using Microsoft.AspNetCore.Builder;
+using System.Net;
+using Impostor.Api.Config;
 
 namespace Impostor.Server
 {
     internal static class Program
     {
-
         private static int Main(string[] args)
         {
 #if DEBUG
@@ -92,8 +96,9 @@ namespace Impostor.Server
             var configuration = CreateConfiguration(args);
             var pluginConfig = configuration.GetSection("PluginLoader")
                 .Get<PluginConfig>() ?? new PluginConfig();
-
-            return Host.CreateDefaultBuilder(args)
+            var httpConfig = configuration.GetSection(HttpServerConfig.Section)
+                .Get<HttpServerConfig>() ?? new HttpServerConfig();
+            var hostBuilder = Host.CreateDefaultBuilder(args)
                 .UseContentRoot(Directory.GetCurrentDirectory())
 #if DEBUG
                 .UseEnvironment(Environment.GetEnvironmentVariable("IMPOSTOR_ENV") ?? "Development")
@@ -122,6 +127,7 @@ namespace Impostor.Server
                     services.Configure<AntiCheatConfig>(host.Configuration.GetSection(AntiCheatConfig.Section));
                     services.Configure<ServerConfig>(host.Configuration.GetSection(ServerConfig.Section));
                     services.Configure<ServerRedirectorConfig>(host.Configuration.GetSection(ServerRedirectorConfig.Section));
+                    services.Configure<HttpServerConfig>(host.Configuration.GetSection(HttpServerConfig.Section));
                     services.AddHostedService<ConsoleInputService>();
 
                     if (redirector.Enabled)
@@ -210,6 +216,44 @@ namespace Impostor.Server
                 .UseSerilog()
                 .UseConsoleLifetime()
                 .UsePluginLoader(pluginConfig);
+
+            Log.Information("Use Http: " + httpConfig.Enabled.ToString());
+            if (httpConfig.Enabled)
+            {
+                hostBuilder.ConfigureWebHostDefaults(builder =>
+                {
+                    builder.ConfigureServices(services =>
+                    {
+                        services.AddControllers();
+                    });
+
+                    builder.Configure(app =>
+                    {
+                        var pluginLoaderService = app.ApplicationServices.GetRequiredService<PluginLoaderService>();
+                        foreach (var pluginInformation in pluginLoaderService.Plugins)
+                        {
+                            if (pluginInformation.Startup is IPluginHttpStartup httpStartup)
+                            {
+                                httpStartup.ConfigureWebApplication(app);
+                            }
+                        }
+
+                        app.UseRouting();
+
+                        app.UseEndpoints(endpoints =>
+                        {
+                            endpoints.MapControllers();
+                        });
+                    });
+
+                    builder.ConfigureKestrel(serverOptions =>
+                    {
+                        serverOptions.Listen(IPAddress.Parse(httpConfig.ListenIp), httpConfig.ListenPort);
+                    });
+                });
+            }
+
+            return hostBuilder;
         }
     }
 }
