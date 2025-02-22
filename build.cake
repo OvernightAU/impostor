@@ -1,33 +1,20 @@
-#addin "nuget:?package=SharpZipLib&Version=1.3.3"
-#addin "nuget:?package=Cake.Compression&Version=0.3.0"
-#addin "nuget:?package=Cake.FileHelpers&Version=5.0.0"
+#addin "nuget:?package=SharpZipLib&Version=1.3.0"
+#addin "nuget:?package=Cake.Compression&Version=0.2.4"
+#addin "nuget:?package=Cake.FileHelpers&Version=3.3.0"
 
-var workflow = BuildSystem.GitHubActions.Environment.Workflow;
-var buildId = workflow.RunNumber;
-var tag = workflow.RefType == GitHubActionsRefType.Tag ? workflow.RefName : null;
 
-var buildVersion = FindRegexMatchGroupInFile("./src/Directory.Build.props", @"\<VersionPrefix\>(.*?)\<\/VersionPrefix\>", 1, System.Text.RegularExpressions.RegexOptions.None).Value;
+var buildId = EnvironmentVariable("APPVEYOR_BUILD_VERSION") ?? "0";
+var buildVersion = EnvironmentVariable("IMPOSTOR_VERSION") ?? "1.0.0";
+var buildBranch = EnvironmentVariable("APPVEYOR_REPO_BRANCH") ?? "dev";
 var buildDir = MakeAbsolute(Directory("./build"));
 
-var target = Argument("target", "Test");
+var prNumber = EnvironmentVariable("APPVEYOR_PULL_REQUEST_NUMBER");
+var target = Argument("target", "Deploy");
 var configuration = Argument("configuration", "Release");
 
-var msbuildSettings = new DotNetMSBuildSettings();
-
-if (tag != null) 
-{
-    if (tag[1..] != buildVersion) throw new Exception("Tag version has to be the same as VersionPrefix in Directory.Build.props");
-    msbuildSettings.Version = buildVersion;
-}
-else if (buildId != 0) 
-{
-    buildId += 500; 
-    msbuildSettings.VersionSuffix = "ci." + buildId;
-    buildVersion += "-ci." + buildId;
-} 
-else 
-{
-    buildVersion += "-dev";
+// On any branch that is not master, we need to tag the version as prerelease.
+if (buildBranch != "master") {
+    buildVersion = buildVersion + "-ci." + buildId;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -39,15 +26,15 @@ private void ImpostorPublish(string name, string project, string runtime, bool i
     var projBuildDir = buildDir.Combine(name + "_" + runtime);
     var projBuildName = name + "_" + buildVersion + "_" + runtime;
 
-    DotNetPublish(project, new DotNetPublishSettings {
+    DotNetCorePublish(project, new DotNetCorePublishSettings {
         Configuration = configuration,
         NoRestore = true,
+        Framework = "net5.0",
         Runtime = runtime,
         SelfContained = false,
         PublishSingleFile = true,
         PublishTrimmed = false,
-        OutputDirectory = projBuildDir,
-        MSBuildSettings = msbuildSettings
+        OutputDirectory = projBuildDir
     });
 
     if (isServer) {
@@ -64,10 +51,6 @@ private void ImpostorPublish(string name, string project, string runtime, bool i
     } else {
         GZipCompress(projBuildDir, buildDir.CombineWithFilePath(projBuildName + ".tar.gz"));
     }
-    
-    if (BuildSystem.GitHubActions.IsRunningOnGitHubActions) {
-        BuildSystem.GitHubActions.Commands.UploadArtifact(projBuildDir, projBuildName);
-    }
 }
 
 private void ImpostorPublishNF(string name, string project) {
@@ -75,12 +58,11 @@ private void ImpostorPublishNF(string name, string project) {
     var projBuildDir = buildDir.Combine(name + "_" + runtime);
     var projBuildZip = buildDir.CombineWithFilePath(name + "_" + buildVersion + "_" + runtime + ".zip");
 
-    DotNetPublish(project, new DotNetPublishSettings {
+    DotNetCorePublish(project, new DotNetCorePublishSettings {
         Configuration = configuration,
         NoRestore = true,
         Framework = "net472",
-        OutputDirectory = projBuildDir,
-        MSBuildSettings = msbuildSettings
+        OutputDirectory = projBuildDir
     });
 
     Zip(projBuildDir, projBuildZip);
@@ -101,61 +83,92 @@ Task("Clean")
 
 Task("Restore")
     .Does(() => {
-        DotNetRestore("./src/Impostor.sln");
+        DotNetCoreRestore("./src/Impostor.sln");
+    });
+
+Task("Patch")
+    .WithCriteria(BuildSystem.AppVeyor.IsRunningOnAppVeyor)
+    .Does(() => {
+        ReplaceRegexInFiles("./src/**/*.csproj", @"<Version>.*?<\/Version>", "<Version>" + buildVersion + "</Version>");
+        ReplaceRegexInFiles("./src/**/*.props", @"<Version>.*?<\/Version>", "<Version>" + buildVersion + "</Version>");
     });
 
 Task("Replay")
     .Does(() => {
         // D:\Projects\GitHub\Impostor\Impostor\src\Impostor.Tools.ServerReplay\sessions
-        DotNetRun(
+        DotNetCoreRun(
             "./src/Impostor.Tools.ServerReplay/Impostor.Tools.ServerReplay.csproj", 
-            "./src/Impostor.Tools.ServerReplay/sessions", new DotNetRunSettings {
+            "./src/Impostor.Tools.ServerReplay/sessions", new DotNetCoreRunSettings {
                 Configuration = configuration,
                 NoRestore = true,
+                Framework = "net5.0"
             });
     });
 
 Task("Build")
     .IsDependentOn("Clean")
+    .IsDependentOn("Patch")
     .IsDependentOn("Restore")
     .IsDependentOn("Replay")
     .Does(() => {
         // Tests.
-        DotNetBuild("./src/Impostor.Tests/Impostor.Tests.csproj", new DotNetBuildSettings {
+        DotNetCoreBuild("./src/Impostor.Tests/Impostor.Tests.csproj", new DotNetCoreBuildSettings {
             Configuration = configuration,
         });
+
+        // Only build artifacts if;
+        // - buildBranch is master/dev
+        // - it is not a pull request
+        if ((buildBranch == "master" || buildBranch == "dev") && string.IsNullOrEmpty(prNumber)) {
+            // Client.
+            ImpostorPublishNF("Impostor-Patcher", "./src/Impostor.Patcher/Impostor.Patcher.WinForms/Impostor.Patcher.WinForms.csproj");
+
+            ImpostorPublish("Impostor-Patcher-Cli", "./src/Impostor.Patcher/Impostor.Patcher.Cli/Impostor.Patcher.Cli.csproj", "win-x64");
+            ImpostorPublish("Impostor-Patcher-Cli", "./src/Impostor.Patcher/Impostor.Patcher.Cli/Impostor.Patcher.Cli.csproj", "osx-x64");
+            ImpostorPublish("Impostor-Patcher-Cli", "./src/Impostor.Patcher/Impostor.Patcher.Cli/Impostor.Patcher.Cli.csproj", "linux-x64");
             
-        // Server.
-        ImpostorPublish("Impostor-Server", "./src/Impostor.Server/Impostor.Server.csproj", "win-x64", true);
-        ImpostorPublish("Impostor-Server", "./src/Impostor.Server/Impostor.Server.csproj", "osx-x64", true);
-        ImpostorPublish("Impostor-Server", "./src/Impostor.Server/Impostor.Server.csproj", "linux-x64", true);
-        ImpostorPublish("Impostor-Server", "./src/Impostor.Server/Impostor.Server.csproj", "linux-arm", true);
-        ImpostorPublish("Impostor-Server", "./src/Impostor.Server/Impostor.Server.csproj", "linux-arm64", true);
+            // Server.
+            ImpostorPublish("Impostor-Server", "./src/Impostor.Server/Impostor.Server.csproj", "win-x64", true);
+            ImpostorPublish("Impostor-Server", "./src/Impostor.Server/Impostor.Server.csproj", "osx-x64", true);
+            ImpostorPublish("Impostor-Server", "./src/Impostor.Server/Impostor.Server.csproj", "linux-x64", true);
+            ImpostorPublish("Impostor-Server", "./src/Impostor.Server/Impostor.Server.csproj", "linux-arm", true);
+            ImpostorPublish("Impostor-Server", "./src/Impostor.Server/Impostor.Server.csproj", "linux-arm64", true);
 
-        // API.
-        DotNetPack("./src/Impostor.Api/Impostor.Api.csproj", new DotNetPackSettings {
-            Configuration = configuration,
-            OutputDirectory = buildDir,
-            IncludeSource = true,
-            IncludeSymbols = true,
-            MSBuildSettings = msbuildSettings
-        });
+            // API.
+            DotNetCorePack("./src/Impostor.Api/Impostor.Api.csproj", new DotNetCorePackSettings {
+                Configuration = configuration,
+                OutputDirectory = buildDir,
+                IncludeSource = true,
+                IncludeSymbols = true
+            });
+        } else {
+            DotNetCoreBuild("./src/Impostor.Patcher/Impostor.Patcher.WinForms/Impostor.Patcher.WinForms.csproj", new DotNetCoreBuildSettings {
+                Configuration = configuration,
+                NoRestore = true,
+                Framework = "net472"
+            });
 
-        if (BuildSystem.GitHubActions.IsRunningOnGitHubActions) {
-            foreach (var file in GetFiles(buildDir + "/*.{nupkg,snupkg}"))
-            {
-                BuildSystem.GitHubActions.Commands.UploadArtifact(file, "Impostor.Api");
-            }
+            DotNetCoreBuild("./src/Impostor.Server/Impostor.Server.csproj", new DotNetCoreBuildSettings {
+                Configuration = configuration,
+                NoRestore = true,
+                Framework = "net5.0"
+            });
         }
     });
 
 Task("Test")
     .IsDependentOn("Build")
     .Does(() => {
-        DotNetTest("./src/Impostor.Tests/Impostor.Tests.csproj", new DotNetTestSettings {
+        DotNetCoreTest("./src/Impostor.Tests/Impostor.Tests.csproj", new DotNetCoreTestSettings {
             Configuration = configuration,
             NoBuild = true
         });
+    });
+
+Task("Deploy")
+    .IsDependentOn("Test")
+    .Does(() => {
+        Information("Finished.");
     });
 
 //////////////////////////////////////////////////////////////////////
