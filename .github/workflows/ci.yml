@@ -27,11 +27,7 @@ jobs:
         with:
           verbosity: Diagnostic
 
-      - name: Check build directory content
-        run: |
-          echo "Listing contents of build/ directory:"
-          ls -l build/
-
+          
       - name: List all directories in the current working directory
         run: |
           echo "Listing all directories in the current working directory:"
