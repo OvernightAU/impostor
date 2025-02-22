@@ -2,7 +2,10 @@
 #addin "nuget:?package=Cake.Compression&Version=0.2.4"
 #addin "nuget:?package=Cake.FileHelpers&Version=3.3.0"
 
-var buildId = EnvironmentVariable("APPVEYOR_BUILD_VERSION") ?? "0";
+var workflow = BuildSystem.GitHubActions.Environment.Workflow;
+var buildId = workflow.RunNumber;
+var tag = workflow.RefType == GitHubActionsRefType.Tag ? workflow.RefName : null;
+
 var buildVersion = EnvironmentVariable("IMPOSTOR_VERSION") ?? "1.0.0";
 var buildBranch = EnvironmentVariable("APPVEYOR_REPO_BRANCH") ?? "dev";
 var buildDir = MakeAbsolute(Directory("./build"));
@@ -12,8 +15,22 @@ var prNumber = EnvironmentVariable("APPVEYOR_PULL_REQUEST_NUMBER");
 var target = Argument("target", "Deploy");
 var configuration = Argument("configuration", "Release");
 
-if (buildBranch != "master") {
-    buildVersion = buildVersion + "-ci." + buildId;
+var msbuildSettings = new DotNetMSBuildSettings();
+
+if (tag != null) 
+{
+    if (tag[1..] != buildVersion) throw new Exception("Tag version has to be the same as VersionPrefix in Directory.Build.props");
+    msbuildSettings.Version = buildVersion;
+}
+else if (buildId != 0) 
+{
+    buildId += 500; 
+    msbuildSettings.VersionSuffix = "ci." + buildId;
+    buildVersion += "-ci." + buildId;
+} 
+else 
+{
+    buildVersion += "-dev";
 }
 
 private void ImpostorPublish(string name, string project, string runtime, bool isServer = false) {
