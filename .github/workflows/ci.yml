@@ -1,43 +1,33 @@
 name: CI
 
-on:
-  push:
-    paths:
-      - '.github/workflows/ci.yml'
-      - 'src/**/**'
-      - 'build.cake'
-  pull_request:
-    paths:
-      - '.github/workflows/ci.yml'
-      - 'src/**/**'
-      - 'build.cake'
+on: ["workflow_dispatch", "push", "pull_request"]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
+    runs-on: ubuntu-22.04
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
 
       - uses: actions/cache@v3
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-nuget-
+              ${{ runner.os }}-nuget-
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v2
+        uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: 7.x
+          dotnet-version: 8.0.x
 
       - name: Run the Cake script
-        uses: cake-build/cake-action@v1
+        uses: cake-build/cake-action@v2
         with:
           verbosity: Diagnostic
 
-      - uses: softprops/action-gh-release@v1
+      - uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag'
         with:
           draft: true
