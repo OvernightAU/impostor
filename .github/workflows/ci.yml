@@ -40,7 +40,7 @@ jobs:
 
       - name: Create all-artifacts.zip
         run: |
-          zip -r ./build/all-artifacts.zip ./build/*.zip
+          zip -r ./build/all-artifacts.zip . -i ./build/*.zip
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
