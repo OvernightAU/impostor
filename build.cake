@@ -88,7 +88,10 @@ Task("Build")
         });
 
         if (BuildSystem.GitHubActions.IsRunningOnGitHubActions) {
-            BuildSystem.GitHubActions.Commands.UploadArtifact(projBuildDir, projBuildName);
+            foreach (var file in GetFiles(buildDir + "/*.{nupkg,snupkg}"))
+            {
+                BuildSystem.GitHubActions.Commands.UploadArtifact(file, "Impostor.Api");
+            }
         }
     });
 
