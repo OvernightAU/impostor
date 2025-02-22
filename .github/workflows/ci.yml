@@ -26,26 +26,3 @@ jobs:
         uses: cake-build/cake-action@v2
         with:
           verbosity: Diagnostic
-
-      - name: Zip each folder in the build directory
-        run: |
-          for folder in ./build/*; do
-            if [ -d "$folder" ]; then
-              folder_name=$(basename "$folder")
-              echo "Creating zip for folder: $folder_name"
-              zip -r "./build/${folder_name}.zip" "$folder"
-              echo "Created ./build/${folder_name}.zip"
-            fi
-          done
-          echo "Listing all files in ./build:"
-          find ./build -type f -exec echo "  - {}" \;
-
-      - name: Create all-artifacts.zip
-        run: |
-          zip -r ./build/all-artifacts.zip ./build/*.zip
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: Build-Artifacts
-          path: ./build/all-artifacts.zip

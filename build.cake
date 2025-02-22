@@ -70,6 +70,26 @@ Task("Build")
         DotNetBuild("./src/Impostor.sln", new DotNetBuildSettings {
             Configuration = configuration,
         });
+
+        // Server.
+        ImpostorPublish("Impostor-Server", "./src/Impostor.Server/Impostor.Server.csproj", "win-x64", true);
+        ImpostorPublish("Impostor-Server", "./src/Impostor.Server/Impostor.Server.csproj", "osx-x64", true);
+        ImpostorPublish("Impostor-Server", "./src/Impostor.Server/Impostor.Server.csproj", "linux-x64", true);
+        ImpostorPublish("Impostor-Server", "./src/Impostor.Server/Impostor.Server.csproj", "linux-arm", true);
+        ImpostorPublish("Impostor-Server", "./src/Impostor.Server/Impostor.Server.csproj", "linux-arm64", true);
+
+        // API.
+        DotNetPack("./src/Impostor.Api/Impostor.Api.csproj", new DotNetPackSettings {
+            Configuration = configuration,
+            OutputDirectory = buildDir,
+            IncludeSource = true,
+            IncludeSymbols = true,
+            MSBuildSettings = msbuildSettings
+        });
+
+        if (BuildSystem.GitHubActions.IsRunningOnGitHubActions) {
+            BuildSystem.GitHubActions.Commands.UploadArtifact(projBuildDir, projBuildName);
+        }
     });
 
 Task("Test")
