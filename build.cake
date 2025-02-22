@@ -42,8 +42,10 @@ private void ImpostorPublish(string name, string project, string runtime, bool i
 
     if (runtime == "win-x64") {
         Zip(projBuildDir, buildDir.CombineWithFilePath(projBuildName + ".zip"));
+        Information("Finished zipping folder: " + projBuildDir);
     } else {
         GZipCompress(projBuildDir, buildDir.CombineWithFilePath(projBuildName + ".tar.gz"));
+        Information("Finished gzipping folder: " + projBuildDir);
     }
 }
 
