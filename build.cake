@@ -6,6 +6,7 @@ var buildId = EnvironmentVariable("APPVEYOR_BUILD_VERSION") ?? "0";
 var buildVersion = EnvironmentVariable("IMPOSTOR_VERSION") ?? "1.0.0";
 var buildBranch = EnvironmentVariable("APPVEYOR_REPO_BRANCH") ?? "dev";
 var buildDir = MakeAbsolute(Directory("./build"));
+CreateDirectory(buildDir);
 
 var prNumber = EnvironmentVariable("APPVEYOR_PULL_REQUEST_NUMBER");
 var target = Argument("target", "Deploy");

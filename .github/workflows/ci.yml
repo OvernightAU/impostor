@@ -27,40 +27,23 @@ jobs:
         with:
           verbosity: Diagnostic
 
-          
-      - name: List all directories in the current working directory
-        run: |
-          echo "Listing all directories in the current working directory:"
-          find . -type d  # This will list all directories from the current directory
-
       - name: Zip each folder in the build directory
         run: |
-          zip_files=()  # Initialize an empty array to collect zip file paths
-          echo "Start zipping folders in build/"
-          for folder in build/*; do
+          for folder in ./build/*; do
             if [ -d "$folder" ]; then
               folder_name=$(basename "$folder")
               echo "Creating zip for folder: $folder_name"
-              zip -r "build/${folder_name}.zip" "$folder"
-              zip_files+=("build/${folder_name}.zip")  # Add the generated zip file to the array
-              echo "Created build/${folder_name}.zip"
-            else
-              echo "Skipping non-directory item: $folder"
+              zip -r "./build/${folder_name}.zip" "$folder"
+              echo "Created ./build/${folder_name}.zip"
             fi
           done
-          echo "Zip files created: ${zip_files[@]}"  # Log the zip files created
 
       - name: Create all-artifacts.zip
         run: |
-          if [ -f "build/all-artifacts.zip" ]; then
-            echo "all-artifacts.zip already exists, deleting it..."
-            rm build/all-artifacts.zip
-          fi
-          echo "Creating all-artifacts.zip"
-          zip -r build/all-artifacts.zip "${zip_files[@]}"  # Use the array of zip files to create the final zip
+          zip -r ./build/all-artifacts.zip ./build/*.zip
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Build-Artifacts
-          path: build/all-artifacts.zip
+          path: ./build/all-artifacts.zip
