@@ -16,7 +16,7 @@ jobs:
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
           restore-keys: |
               ${{ runner.os }}-nuget-
-
+      
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
@@ -27,10 +27,20 @@ jobs:
         with:
           verbosity: Diagnostic
 
-      - name: Create zip of all artifacts
+      - name: Zip each folder in the build directory
         run: |
           mkdir -p ./build
-          zip -r ./build/all-artifacts.zip ./build/*.zip ./build/*.tar.gz ./build/*.nupkg ./build/*.snupkg
+          for folder in ./build/*; do
+            if [ -d "$folder" ]; then
+              folder_name=$(basename "$folder")
+              zip -r "./build/${folder_name}.zip" "$folder"
+            fi
+          done
+
+      - name: Create all-artifacts.zip
+        run: |
+          mkdir -p ./build
+          zip -r ./build/all-artifacts.zip ./build/*.zip
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
