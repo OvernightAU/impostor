@@ -32,6 +32,11 @@ jobs:
           echo "Listing contents of build/ directory:"
           ls -l build/
 
+      - name: List all directories in the current working directory
+        run: |
+          echo "Listing all directories in the current working directory:"
+          find . -type d  # This will list all directories from the current directory
+
       - name: Zip each folder in the build directory
         run: |
           zip_files=()  # Initialize an empty array to collect zip file paths
