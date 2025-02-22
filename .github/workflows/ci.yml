@@ -33,7 +33,9 @@ jobs:
           for folder in ./build/*; do
             if [ -d "$folder" ]; then
               folder_name=$(basename "$folder")
+              echo "Creating zip for folder: $folder_name"
               zip -r "./build/${folder_name}.zip" "$folder"
+              echo "Created ./build/${folder_name}.zip"
             fi
           done
 
