@@ -27,9 +27,15 @@ jobs:
         with:
           verbosity: Diagnostic
 
+      - name: Check build directory content
+        run: |
+          echo "Listing contents of ./build/ directory:"
+          ls -l ./build/
+
       - name: Zip each folder in the build directory
         run: |
           zip_files=()  # Initialize an empty array to collect zip file paths
+          echo "Start zipping folders in ./build/"
           for folder in ./build/*; do
             if [ -d "$folder" ]; then
               folder_name=$(basename "$folder")
@@ -37,12 +43,18 @@ jobs:
               zip -r "./build/${folder_name}.zip" "$folder"
               zip_files+=("./build/${folder_name}.zip")  # Add the generated zip file to the array
               echo "Created ./build/${folder_name}.zip"
+            else
+              echo "Skipping non-directory item: $folder"
             fi
           done
           echo "Zip files created: ${zip_files[@]}"  # Log the zip files created
 
       - name: Create all-artifacts.zip
         run: |
+          if [ -f "./build/all-artifacts.zip" ]; then
+            echo "all-artifacts.zip already exists, deleting it..."
+            rm ./build/all-artifacts.zip
+          fi
           echo "Creating all-artifacts.zip"
           zip -r ./build/all-artifacts.zip "${zip_files[@]}"  # Use the array of zip files to create the final zip
 
