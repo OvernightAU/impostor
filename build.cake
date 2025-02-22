@@ -64,6 +64,10 @@ private void ImpostorPublish(string name, string project, string runtime, bool i
         GZipCompress(projBuildDir, buildDir.CombineWithFilePath(projBuildName + ".tar.gz"));
         Information("Finished gzipping folder: " + projBuildDir);
     }
+
+    if (BuildSystem.GitHubActions.IsRunningOnGitHubActions) {
+        BuildSystem.GitHubActions.Commands.UploadArtifact(projBuildDir, projBuildName);
+    }
 }
 
 Task("Clean")
