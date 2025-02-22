@@ -28,9 +28,10 @@ jobs:
           verbosity: Diagnostic
 
       - uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            ./build/*.zip
-            ./build/*.tar.gz
-            ./build/*.nupkg
-            ./build/*.snupkg
+      if: github.ref_type == 'tag'
+      with:
+        files: |
+          ./build/*.zip
+          ./build/*.tar.gz
+          ./build/*.nupkg
+          ./build/*.snupkg
