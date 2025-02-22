@@ -29,18 +29,22 @@ jobs:
 
       - name: Zip each folder in the build directory
         run: |
+          zip_files=()  # Initialize an empty array to collect zip file paths
           for folder in ./build/*; do
             if [ -d "$folder" ]; then
               folder_name=$(basename "$folder")
               echo "Creating zip for folder: $folder_name"
               zip -r "./build/${folder_name}.zip" "$folder"
+              zip_files+=("./build/${folder_name}.zip")  # Add the generated zip file to the array
               echo "Created ./build/${folder_name}.zip"
             fi
           done
+          echo "Zip files created: ${zip_files[@]}"  # Log the zip files created
 
       - name: Create all-artifacts.zip
         run: |
-          zip -r ./build/all-artifacts.zip . -i ./build/*.zip
+          echo "Creating all-artifacts.zip"
+          zip -r ./build/all-artifacts.zip "${zip_files[@]}"  # Use the array of zip files to create the final zip
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
