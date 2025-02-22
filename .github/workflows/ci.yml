@@ -37,6 +37,8 @@ jobs:
               echo "Created ./build/${folder_name}.zip"
             fi
           done
+          echo "Listing all files in ./build:"
+          find ./build -type f -exec echo "  - {}" \;
 
       - name: Create all-artifacts.zip
         run: |
