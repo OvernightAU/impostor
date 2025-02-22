@@ -27,11 +27,11 @@ jobs:
         with:
           verbosity: Diagnostic
 
-      - uses: softprops/action-gh-release@v1
-        if: github.ref_type == 'tag'
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
         with:
-          draft: true
-          files: |
+          name: Build-Artifacts
+          path: |
             ./build/*.zip
             ./build/*.tar.gz
             ./build/*.nupkg
