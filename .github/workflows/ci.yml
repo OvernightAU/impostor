@@ -1,4 +1,3 @@
-
 name: CI
 
 on: ["workflow_dispatch", "push", "pull_request"]
@@ -7,7 +6,7 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
 
@@ -17,6 +16,7 @@ jobs:
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
           restore-keys: |
               ${{ runner.os }}-nuget-
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
@@ -27,12 +27,13 @@ jobs:
         with:
           verbosity: Diagnostic
 
+      - name: Create zip of all artifacts
+        run: |
+          mkdir -p ./build
+          zip -r ./build/all-artifacts.zip ./build/*.zip ./build/*.tar.gz ./build/*.nupkg ./build/*.snupkg
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Build-Artifacts
-          path: |
-            ./build/*.zip
-            ./build/*.tar.gz
-            ./build/*.nupkg
-            ./build/*.snupkg
+          path: ./build/all-artifacts.zip
