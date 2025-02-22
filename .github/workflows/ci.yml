@@ -29,7 +29,6 @@ jobs:
 
       - name: Zip each folder in the build directory
         run: |
-          mkdir -p ./build
           for folder in ./build/*; do
             if [ -d "$folder" ]; then
               folder_name=$(basename "$folder")
@@ -41,7 +40,6 @@ jobs:
 
       - name: Create all-artifacts.zip
         run: |
-          mkdir -p ./build
           zip -r ./build/all-artifacts.zip ./build/*.zip
 
       - name: Upload build artifacts
