@@ -3,6 +3,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Impostor.Api.Events.Managers;
+using Impostor.Api.Net;
+using Impostor.Api.Net.Messages.S2C;
 using Impostor.Hazel;
 using Impostor.Hazel.Udp;
 using Impostor.Server.Events.Client;
@@ -67,6 +69,17 @@ namespace Impostor.Server.Net
             }
             catch
             {
+            }
+
+            if (string.IsNullOrEmpty(deviceId) && ClientManager.IsVersionSupported(clientVersion))
+            {
+                using var packet = MessageWriter.Get(MessageType.Reliable);
+                string reason = "Invalid Client Data.\nTry disabling mods or updating the game.";
+                Message01JoinGameS2C.SerializeError(packet, false, Api.Innersloth.DisconnectReason.Custom, reason);
+                await e.Connection.SendAsync(packet);
+                await Task.Delay(TimeSpan.FromMilliseconds(250));
+                await (e.Connection as IHazelConnection).DisconnectAsync(reason);
+                return;
             }
 
             var connection = new HazelConnection(e.Connection, _connectionLogger);

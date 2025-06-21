@@ -19,7 +19,7 @@ namespace Impostor.Server.Net.Manager
 {
     internal partial class ClientManager
     {
-        private static readonly DateTime LastDateTime = new(2024, 4, 2);
+        private static readonly DateTime LastDateTime = new(2025, 6, 21);
 
         public static bool IsVersionSupported(int version)
         {
