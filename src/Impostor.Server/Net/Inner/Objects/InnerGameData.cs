@@ -131,20 +131,40 @@ namespace Impostor.Server.Net.Inner.Objects
                 throw new ImpostorCheatException($"Client attempted to send data for {nameof(InnerGameData)} as non-host");
             }
 
-            var num = reader.ReadPackedInt32();
-
-            for (var i = 0; i < num; i++)
+            if (initialState)
             {
-                var playerId = reader.ReadByte();
-                var playerInfo = new InnerPlayerInfo(playerId);
-
-                playerInfo.Deserialize(reader);
-
-                try
+                int num = reader.ReadPackedInt32();
+                for (int i = 0; i < num; i++)
                 {
-                    _allPlayers.GetOrAdd(playerInfo.PlayerId, playerInfo);
+                    InnerPlayerInfo playerInfo = new InnerPlayerInfo(reader.ReadByte());
+                    playerInfo.Deserialize(reader);
+                    try
+                    {
+                        _allPlayers.GetOrAdd(playerInfo.PlayerId, playerInfo);
+                    }
+                    catch (Exception ex) { _logger.LogInformation(ex.ToString()); }
                 }
-                catch (Exception ex) { _logger.LogInformation(ex.ToString()); }
+            }
+            else
+            {
+                byte b = reader.ReadByte();
+                for (int j = 0; j < b; j++)
+                {
+                    byte b2 = reader.ReadByte();
+                    InnerPlayerInfo? playerById = GetPlayerById(b2);
+                    if (playerById != null)
+                    {
+                        playerById.Deserialize(reader);
+                        continue;
+                    }
+                    playerById = new InnerPlayerInfo(b2);
+                    playerById.Deserialize(reader);
+                    try
+                    {
+                        _allPlayers.GetOrAdd(playerById.PlayerId, playerById);
+                    }
+                    catch (Exception ex) { _logger.LogInformation(ex.ToString()); }
+                }
             }
         }
 

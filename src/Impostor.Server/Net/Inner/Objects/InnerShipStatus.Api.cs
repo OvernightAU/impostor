@@ -9,7 +9,7 @@ namespace Impostor.Server.Net.Inner.Objects
     {
         public async ValueTask EndGameCustomAsync(byte[] winners, string reason, string audioPath, string hex)
         {
-            using var writer = _game.StartRpc(NetId, (byte)RpcCalls.EndGameCustom);
+            using var writer = _game.StartRpc(NetId, (byte)RpcCalls.SetWinners);
             writer.WriteBytesAndSize(winners);
             writer.Write(reason);
             writer.Write(audioPath);

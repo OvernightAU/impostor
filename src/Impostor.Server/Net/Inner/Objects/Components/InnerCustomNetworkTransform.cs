@@ -50,7 +50,7 @@ namespace Impostor.Server.Net.Inner.Objects.Components
         {
             if (call == (byte)RpcCalls.SnapTo)
             {
-                if (!_game.Host.Client.VersionSupported)
+                if (_game.Host?.Client.VersionSupported != true)
                 {
                     return default;
                 }
@@ -93,7 +93,7 @@ namespace Impostor.Server.Net.Inner.Objects.Components
 
         public override void Deserialize(IClientPlayer sender, IClientPlayer? target, IMessageReader reader, bool initialState)
         {
-            if (!_game.Host.Client.VersionSupported)
+            if (_game.Host?.Client.VersionSupported != true)
             {
                 return;
             }

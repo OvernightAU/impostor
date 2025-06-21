@@ -65,7 +65,7 @@ namespace Impostor.Server.Net.Manager
             return Clients.FirstOrDefault(c => c.Id == clientId);
         }
 
-        public async ValueTask RegisterConnectionAsync(IHazelConnection connection, string name, int clientVersion)
+        public async ValueTask RegisterConnectionAsync(IHazelConnection connection, string name, int clientVersion, string deviceId = "")
         {
             if (name.Length > 12)
             {
@@ -88,6 +88,7 @@ namespace Impostor.Server.Net.Manager
 
             client.Id = id;
             client.GameVersion = clientVersion;
+            client.DeviceId = deviceId;
             client.VersionSupported = IsVersionSupported(clientVersion);
             _logger.LogTrace("Client connected.");
             _clients.TryAdd(id, client);

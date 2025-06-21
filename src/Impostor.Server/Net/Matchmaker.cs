@@ -60,13 +60,21 @@ namespace Impostor.Server.Net
             // Handshake.
             var clientVersion = e.HandshakeData.ReadInt32();
             var name = e.HandshakeData.ReadString();
+            var deviceId = string.Empty;
+            try
+            {
+                deviceId = e.HandshakeData.ReadString();
+            }
+            catch
+            {
+            }
 
             var connection = new HazelConnection(e.Connection, _connectionLogger);
 
             await _eventManager.CallAsync(new ClientConnectionEvent(connection, e.HandshakeData));
 
             // Register client
-            await _clientManager.RegisterConnectionAsync(connection, name, clientVersion);
+            await _clientManager.RegisterConnectionAsync(connection, name, clientVersion, deviceId);
         }
     }
 }

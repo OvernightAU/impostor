@@ -21,6 +21,8 @@ namespace Impostor.Api.Net
 
         public int GameVersion { get; set; }
 
+        public string DeviceId { get; set; }
+
         /// <summary>
         ///     Gets the name that was provided by the player in the client.
         /// </summary>

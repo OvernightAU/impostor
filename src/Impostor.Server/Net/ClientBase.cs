@@ -25,6 +25,8 @@ namespace Impostor.Server.Net
 
         public int GameVersion { get; set; }
 
+        public string DeviceId { get; set; }
+
         public bool VersionSupported { get; set; }
 
         public IHazelConnection Connection { get; }

@@ -51,13 +51,13 @@ namespace Impostor.Server.Net.Inner.Objects
             try
             {
                 PlayerName = reader.ReadString();
-                ColorId = reader.ReadInt32();
+                ColorId = reader.ReadPackedInt32();
                 HatId = reader.ReadString();
                 PetId = reader.ReadString();
                 SkinId = reader.ReadString();
-                var flag = reader.ReadByte();
-                Disconnected = (flag & 1) != 0;
-                IsDead = (flag & 4) != 0;
+                var b = reader.ReadByte();
+                Disconnected = (b & 1) != 0;
+                IsDead = (b & 4) != 0;
                 var taskCount = reader.ReadByte();
                 for (var i = 0; i < taskCount; i++)
                 {
@@ -66,7 +66,7 @@ namespace Impostor.Server.Net.Inner.Objects
                 }
             }
             catch
-            {
+            {                
             }
         }
     }

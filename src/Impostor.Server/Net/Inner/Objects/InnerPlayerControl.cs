@@ -92,6 +92,8 @@ namespace Impostor.Server.Net.Inner.Objects
                 throw new ImpostorCheatException($"Client sent {(RpcCalls)call} to unowned {PlayerInfo?.PlayerName} and is not host");
             }
 
+            _logger.LogWarning($"Handling RPC {(RpcCalls)call} ({(int)call}) in {sender.Client.Name}");
+
             switch ((RpcCalls)call)
             {
                 // Play an animation.

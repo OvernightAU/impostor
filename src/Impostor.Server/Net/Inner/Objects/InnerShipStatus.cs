@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Impostor.Api;
 using Impostor.Api.Innersloth;
@@ -18,11 +19,12 @@ namespace Impostor.Server.Net.Inner.Objects
         private readonly ILogger<InnerShipStatus> _logger;
         private readonly Game _game;
         private readonly Dictionary<SystemTypes, ISystemType> _systems;
+
         public enum RpcCalls
         {
             CloseDoorsOfType = 0,
             RepairSystem = 1,
-            EndGameCustom = 2,
+            SetWinners = 2,
         }
 
         public InnerShipStatus(ILogger<InnerShipStatus> logger, Game game)
@@ -55,6 +57,8 @@ namespace Impostor.Server.Net.Inner.Objects
         public override ValueTask HandleRpc(ClientPlayer sender, ClientPlayer? target, byte call,
             IMessageReader reader)
         {
+            _logger.LogWarning($"Handling RPC {(RpcCalls)call} ({(int)call}) in {sender.Client.Name}");
+
             switch ((RpcCalls)call)
             {
                 case RpcCalls.CloseDoorsOfType:
@@ -91,19 +95,16 @@ namespace Impostor.Server.Net.Inner.Objects
                     break;
                 }
 
-                case RpcCalls.EndGameCustom:
+                case RpcCalls.SetWinners:
                 {
                     if (!sender.IsHost)
                     {
                         throw new ImpostorCheatException("Only host can end game");
                     }
 
-                    var playerList = reader.ReadBytesAndSize();
-                    var reason = reader.ReadString();
-                    var audioClip = reader.ReadString();
-                    var endColorHex = reader.ReadString();
+                    var playerList = reader.ReadBytesAndSize().ToArray();
 
-                    _logger.LogInformation($"Host sent game over with reason {reason}");
+                    _logger.LogInformation($"Host sent game over with winners {string.Join(", ", playerList.Select(b => b.ToString()))}");
                     break;
                 }
 
