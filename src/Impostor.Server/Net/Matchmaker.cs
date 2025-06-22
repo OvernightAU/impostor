@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Impostor.Api.Events.Managers;
 using Impostor.Api.Net;
@@ -33,6 +34,23 @@ namespace Impostor.Server.Net
             _readerPool = readerPool;
             _connectionLogger = connectionLogger;
             _eventManager = eventManager;
+        }
+
+        public static bool IsHWIDValid(string hwid)
+        {
+            if (string.IsNullOrEmpty(hwid))
+            {
+                return false;
+            }
+
+            // Must be all hex characters
+            if (!Regex.IsMatch(hwid, @"\A[0-9a-fA-F]+\z"))
+            {
+                return false;
+            }
+
+            // Must be either MD5 (32 chars) or SHA-256 (64 chars)
+            return hwid.Length == 32 || hwid.Length == 64;
         }
 
         public async ValueTask StartAsync(IPEndPoint ipEndPoint)
@@ -71,14 +89,14 @@ namespace Impostor.Server.Net
             {
             }
 
-            if (string.IsNullOrEmpty(deviceId) && ClientManager.IsVersionSupported(clientVersion))
+            if (!IsHWIDValid(deviceId) && ClientManager.IsVersionSupported(clientVersion))
             {
                 using var packet = MessageWriter.Get(MessageType.Reliable);
-                string reason = "Invalid Client Data.\nTry disabling mods or updating the game.";
+                var reason = "Invalid Client Data.\nTry disabling mods or updating the game.";
                 Message01JoinGameS2C.SerializeError(packet, false, Api.Innersloth.DisconnectReason.Custom, reason);
                 await e.Connection.SendAsync(packet);
                 await Task.Delay(TimeSpan.FromMilliseconds(250));
-                await (e.Connection as IHazelConnection).DisconnectAsync(reason);
+                await e.Connection.Disconnect(reason);
                 return;
             }
 
