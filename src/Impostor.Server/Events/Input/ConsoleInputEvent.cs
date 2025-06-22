@@ -91,6 +91,54 @@ namespace Impostor.Server.Input
                         break;
                     }
 
+                case "ban":
+                    {
+                        if (arguments.Length < 2)
+                        {
+                            Console.WriteLine("Missing player id");
+                            break;
+                        }
+
+                        if (!int.TryParse(arguments[1], out int id))
+                        {
+                            Console.WriteLine("Invalid ID format");
+                            break;
+                        }
+
+                        var client = _clientManager.GetClientById(id);
+                        var reason = string.Join(" ", arguments.Skip(2));
+
+                        if (client != null)
+                        {
+                            BanManager.Ban(client, reason);
+                            client.DisconnectAsync(Api.Innersloth.DisconnectReason.Error);
+                        }
+
+                        break;
+                    }
+
+                case "unban":
+                    {
+                        if (arguments.Length < 2)
+                        {
+                            Console.WriteLine("Missing player id");
+                            break;
+                        }
+
+                        var identifier = string.Join(" ", arguments.Skip(1));
+
+                        if (BanManager.Unban(identifier))
+                        {
+                            Console.WriteLine("Unbanned Successfully!");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Unban failed.");
+                        }
+
+                        break;
+                    }
+
                 case "warning":
                     {
                         if (arguments.Length < 2)

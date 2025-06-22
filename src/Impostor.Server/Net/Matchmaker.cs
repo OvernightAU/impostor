@@ -1,4 +1,5 @@
 using System;
+using System.CommandLine.Rendering;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
@@ -93,6 +94,26 @@ namespace Impostor.Server.Net
             {
                 using var packet = MessageWriter.Get(MessageType.Reliable);
                 var reason = "Invalid Client Data.\nTry disabling mods or updating the game.";
+                Message01JoinGameS2C.SerializeError(packet, false, Api.Innersloth.DisconnectReason.Custom, reason);
+                await e.Connection.SendAsync(packet);
+                await Task.Delay(TimeSpan.FromMilliseconds(250));
+                await e.Connection.Disconnect(reason);
+                return;
+            }
+
+            if (BanManager.IsBanned(deviceId, e.Connection.EndPoint.Address.ToString()))
+            {
+                var banEntry = BanManager.GetBanEntry(deviceId);
+                banEntry ??= BanManager.GetBanEntry(e.Connection.EndPoint.Address.ToString());
+
+                if (banEntry == null)
+                {
+                    await e.Connection.Disconnect("error");
+                    return;
+                }
+
+                using var packet = MessageWriter.Get(MessageType.Reliable);
+                var reason = $"You are banned from this server.\nReason: {banEntry.Reason}";
                 Message01JoinGameS2C.SerializeError(packet, false, Api.Innersloth.DisconnectReason.Custom, reason);
                 await e.Connection.SendAsync(packet);
                 await Task.Delay(TimeSpan.FromMilliseconds(250));
