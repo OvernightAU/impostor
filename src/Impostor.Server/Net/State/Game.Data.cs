@@ -34,14 +34,11 @@ namespace Impostor.Server.Net.State
 
         private static readonly Type[] SpawnableObjects =
         {
-            typeof(InnerShipStatus), // ShipStatus
             typeof(InnerMeetingHud),
             typeof(InnerLobbyBehaviour),
             typeof(InnerGameData),
             typeof(InnerPlayerControl),
-            typeof(InnerShipStatus), // HeadQuarters
-            typeof(InnerShipStatus), // PlanetMap
-            typeof(InnerShipStatus), // AprilShipStatus
+            typeof(InnerShipStatus),
         };
 
         private readonly List<InnerNetObject> _allObjects = new();

@@ -90,7 +90,7 @@ namespace Impostor.Server.Net.Manager
             client.GameVersion = clientVersion;
             client.DeviceId = deviceId;
             client.VersionSupported = IsVersionSupported(clientVersion);
-            _logger.LogTrace("Client connected.");
+            _logger.LogInformation($"Player {client.Name} ({client.DeviceId}) connected.");
             _clients.TryAdd(id, client);
 
             await _eventManager.CallAsync(new ClientConnectedEvent(connection, client));
